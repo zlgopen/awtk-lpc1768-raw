@@ -1,0 +1,12 @@
+--cpu Cortex-M3
+".\obj\core_cm3.o"
+".\obj\startup_lpc17xx.o"
+".\obj\system_lpc17xx.o"
+".\obj\main.o"
+".\obj\lpc17xx_it.o"
+".\obj\lcd.o"
+".\obj\picture.o"
+--strict --scatter ".\obj\Project.sct"
+--summary_stderr --info summarysizes --map --load_addr_map_info --xref --callgraph --symbols
+--info sizes --info totals --info unused --info veneers
+--list ".\list\Project.map" -o .\obj\Project.axf
