@@ -50,17 +50,15 @@ void systick_test(void) {
   assert(duration == 1000);
 }
 
+int gui_app_start(int lcd_w, int lcd_h);
+
 int main (void)                        
 {
   SystemInit();
   sys_tick_init();
+	LCD_Init();
+  LCD_Clear(Red);
 	
-  LCD_Init();
-  LCD_Clear(White);
-	
-  platform_prepare();
-  systick_test();
-	
-  lcd_test();
+	return gui_app_start(LCD_W, LCD_H);
 }
 

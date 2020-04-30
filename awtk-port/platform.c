@@ -24,11 +24,10 @@
 
 ret_t platform_prepare(void) {
   static bool_t inited = FALSE;
-  static uint32_t s_heam_mem[2000];
 
   if (!inited) {
     inited = TRUE;
-    tk_mem_init(s_heam_mem, sizeof(s_heam_mem));
+    tk_mem_init((uint32_t*)0x2007C000, 0x8000);
   }
 
   return RET_OK;

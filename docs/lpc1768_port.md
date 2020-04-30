@@ -420,7 +420,7 @@ int main (void)
 
 ### 8.2 初始化 systick
 
-systick 主要用于辅助实现定时器，底层驱动我也不熟悉，参考[LPC1768:_SysTick_Timer](https://exploreembedded.com/wiki/LPC1768:_SysTick_Timer) 实现了systick的初始化。
+systick 主要用于辅助实现定时器，底层驱动我也不熟悉，参考 [LPC1768:_SysTick_Timer](https://exploreembedded.com/wiki/LPC1768:_SysTick_Timer) 实现了 systick 的初始化。
 
 > awtk-port/sys_tick.c
 
@@ -450,7 +450,7 @@ void sys_tick_init(void) {
 }
 ```
 
-在主函数中调用sys\_tick\_init初始化systick，并写个测试验证一下systick是否工作。
+在主函数中调用 sys\_tick\_init 初始化 systick，并写个测试验证一下 systick 是否工作。
 
 ```
 void systick_test(void) {
@@ -477,5 +477,90 @@ int main (void)
 }
 ```
 
-运行一下，如果没有触发assert，说明systick没有问题了。如果有问题，请自行查找解决方案。
+运行一下，如果没有触发 assert，说明 systick 没有问题了。如果有问题，请自行查找解决方案。
 
+
+
+## 9. 加入应用程序及资源
+
+现在我们来加入应用程序的代码和资源，这里我们使用 demo_basic.c 和 assets-mini.c，创建一个分组 awtk-app，并将下面的文件加入：
+
+```
+awtk/demos/demo_basic.c
+awtk/demos/assets-mini.c
+```
+
+如下图所示：
+
+![](images/add_app.jpg)
+
+## 10. 问题诊断
+
+编译运行，发现屏幕没有反应。不要惊讶，事情通常没有这么顺利的，根据以前的经验，问题有两个来源：
+
+* 栈空间不够。
+* 堆空间不够。
+
+### 10.1 调整 Stack_Size
+
+LPC 1768 的 Stack_Size 是在文件 Cmsis\startup_LPC17xx.s 中定义的，我们把它从 1K 改为 8K:
+
+```c
+; <h> Stack Configuration
+;   <o> Stack Size (in Bytes) <0x0-0xFFFFFFFF:8>
+; </h>
+
+Stack_Size      EQU     0x000002000
+```
+
+### 10.2 调整 Heap_Size
+
+这里 AWTK 不是用的系统的堆，所以系统的堆 Heap_Size 保持为 0 不变。
+
+之前，我有点奇怪，明明文档说有 64K RAM，但是却只能使用 32K 的 RAM，看了一下 kell 的设置（如下图），原来它有两块不连续的 RAM:
+
+![](images/heap_size_1.jpg)
+
+再看看 linker 的配置文件（Project.sct）：
+
+```
+LR_IROM1 0x00000000 0x00080000  {    ; load region size_region
+  ER_IROM1 0x00000000 0x00080000  {  ; load address = execution address
+   *.o (RESET, +First)
+   *(InRoot$$Sections)
+   .ANY (+RO)
+  }
+  RW_IRAM1 0x10000000 0x00008000  {  ; RW data
+   .ANY (+RW +ZI)
+  }
+}
+```
+
+第二块 RAM 完全没有使用，我们拿它来作为堆吧。重新实现 platform_prepare:
+
+```c
+ret_t platform_prepare(void) {
+  static bool_t inited = FALSE;
+
+  if (!inited) {
+    inited = TRUE;
+    tk_mem_init((uint32_t*)0x2007C000, 0x8000);
+  }
+
+  return RET_OK;
+}
+```
+
+重新编译运行，显示正常了(这块板子的屏幕比较小，显示乱了点，效果有点抱歉)。
+
+![](images/app_works.jpg)
+
+## 11. 实现输入事情
+
+### 11.1 实现按键事件
+
+> 后续再弄
+
+### 11.2 实现触屏事件
+
+> 后续再弄

@@ -1588,6 +1588,21 @@
           </Files>
         </Group>
         <Group>
+          <GroupName>awtk-app</GroupName>
+          <Files>
+            <File>
+              <FileName>assets-mini.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\awtk\demos\assets-mini.c</FilePath>
+            </File>
+            <File>
+              <FileName>demo_basic.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\awtk\demos\demo_basic.c</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
           <GroupName>::CMSIS</GroupName>
         </Group>
       </Groups>

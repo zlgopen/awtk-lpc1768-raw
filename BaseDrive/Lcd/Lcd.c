@@ -1219,6 +1219,7 @@ void LCD_DisplayAsciiStringCust(uint8_t x,uint16_t y,char *c,uint8_t size,uint16
 ** 输出参数:    无
 ** 返回值:
 *********************************************************************************************************/
+#if 0
 void LCD_Bmp (unsigned int x, unsigned int y, unsigned int w, unsigned int h, unsigned char *bmp) 
 {
   unsigned int    i, j;
@@ -1237,6 +1238,24 @@ void LCD_Bmp (unsigned int x, unsigned int y, unsigned int w, unsigned int h, un
     }
   }
 }
+#else
+void LCD_Bmp (unsigned int x, unsigned int y, unsigned int w, unsigned int h, unsigned char *bmp) 
+{
+  unsigned int    i, j;
+  unsigned short *bitmap_ptr = (unsigned short *)bmp;
+
+  LCD_WindowMax(x,y,x+w,y+h);
+
+  LCD_SetCursor(x,y);
+  wr_cmd(0x22);
+  
+  for (j = 0; j < h; j++) {
+    for (i = 0; i < w; i++) {
+      wr_dat_only(*bitmap_ptr++);
+    }
+  }
+}
+#endif
 
 /*********************************************************************************
 ** 函数名:              void LCD_DrawPoint(uint16_t xsta, uint16_t ysta,uint16_t POINT_COLOR) 
