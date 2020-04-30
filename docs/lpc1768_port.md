@@ -131,7 +131,7 @@ AWTK 的源文件很多，而且不同的平台，加入的文件有所不同，
 
 用 files/files_m3.xml 中的内容替换选中部分的内容，保存文件并退出。
 
-> 如果 Project.uvprojx 文件不是在 Project（或其它名字）子目录下，而是项目根目录下（和 awtk 并列），则需要编辑 files/files_m3.xml，把。.\awtk 替换成。\awtk。
+> 如果 Project.uvprojx 文件不是在 Project（或其它名字）子目录下，而是项目根目录下（和 awtk 并列），则需要编辑 files/files_m3.xml，把 ..\awtk 替换成 .\awtk。
 
 用 keil 重新打开工程文件 Project.uvprojx，我们可以看到文件已经加入：
 
@@ -479,8 +479,6 @@ int main (void)
 
 运行一下，如果没有触发 assert，说明 systick 没有问题了。如果有问题，请自行查找解决方案。
 
-
-
 ## 9. 加入应用程序及资源
 
 现在我们来加入应用程序的代码和资源，这里我们使用 demo_basic.c 和 assets-mini.c，创建一个分组 awtk-app，并将下面的文件加入：
@@ -551,7 +549,7 @@ ret_t platform_prepare(void) {
 }
 ```
 
-重新编译运行，显示正常了(这块板子的屏幕比较小，显示乱了点，效果有点抱歉)。
+重新编译运行，显示正常了（这块板子的屏幕比较小，显示乱了点，效果有点抱歉）。
 
 ![](images/app_works.jpg)
 
