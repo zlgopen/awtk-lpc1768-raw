@@ -135,6 +135,21 @@ AWTK 的源文件很多，而且不同的平台，加入的文件有所不同，
 
 > 如果 Project.uvprojx 文件不是在 Project（或其它名字）子目录下，而是项目根目录下（和 awtk 并列），则需要编辑 files/files_m3.xml，把。.\awtk 替换成。\awtk。
 
-用keil重新打开工程文件Project.uvprojx，我们可以看到文件已经加入：
+用 keil 重新打开工程文件 Project.uvprojx，我们可以看到文件已经加入：
 
 ![](images/add_file_3.jpg)
+
+## 6. 配置 keil 工程
+
+* 定义宏 HAS\_AWTK\_CONFIG
+
+* 增加头文件路径
+
+```
+../awtk/src;../awtk/src/ext_widgets;../awtk/3rd;../awtk/3rd/agge;../awtk/3rd/nanovg;../awtk/3rd/nanovg/base;../awtk/3rd/gpinyin/include../awtk/3rd/libunibreak;../awtk-port;
+```
+* Misc Controls 中加上--gnu标志。
+
+设置界面的效果如下：
+
+![](images/settings.jpg)
