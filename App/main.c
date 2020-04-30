@@ -17,10 +17,9 @@
 #include <LPC17xx.H>                    
 #include "lcd.h"
 #include "string.h"
-
+#include "sys_tick.h"
 #include "tkc/platform.h"
 #include "lcd/lcd_mem_fragment.h"
-
 
 void lcd_test(void) {
 	rect_t r = rect_init(0, 0, 30, 30);
@@ -42,15 +41,26 @@ void lcd_test(void) {
 	}
 }
 
+void systick_test(void) {
+  int64_t start = get_time_ms64();
+  sleep_ms(1000);
+  int64_t end = get_time_ms64();
+  int64_t duration = end - start;
+	
+  assert(duration == 1000);
+}
+
 int main (void)                        
 {
   SystemInit();
-
+  sys_tick_init();
+	
   LCD_Init();
   LCD_Clear(White);
 	
-	platform_prepare();
+  platform_prepare();
+  systick_test();
 	
-	lcd_test();
+  lcd_test();
 }
 

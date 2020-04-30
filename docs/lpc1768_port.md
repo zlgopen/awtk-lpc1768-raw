@@ -417,3 +417,65 @@ int main (void)
 #define pixel_from_rgb(r, g,b)
 #define pixel_to_rgba(p) 
 ```
+
+### 8.2 初始化 systick
+
+systick 主要用于辅助实现定时器，底层驱动我也不熟悉，参考[LPC1768:_SysTick_Timer](https://exploreembedded.com/wiki/LPC1768:_SysTick_Timer) 实现了systick的初始化。
+
+> awtk-port/sys_tick.c
+
+```c
+#include <LPC17xx.H>                    
+#include "sys_tick.h"
+
+/* Systick Register address, refer datasheet for more info */
+#define STCTRL      (*( ( volatile unsigned long *) 0xE000E010 ))
+#define STRELOAD    (*( ( volatile unsigned long *) 0xE000E014 ))
+#define STCURR      (*( ( volatile unsigned long *) 0xE000E018 ))  
+
+/*******STCTRL bits*******/
+#define SBIT_ENABLE     0
+#define SBIT_TICKINT    1
+#define SBIT_CLKSOURCE  2
+
+/* 100000000Mhz * 1ms = 1000000 - 1 */
+#define RELOAD_VALUE  99999
+
+void sys_tick_init(void) {
+  STRELOAD = RELOAD_VALUE;    // Reload value for 1ms tick
+  /* Enable the Systick, Systick Interrup and select CPU Clock Source */
+	STCTRL = (1<<SBIT_ENABLE) | (1<<SBIT_TICKINT) | (1<<SBIT_CLKSOURCE);
+	
+	return;
+}
+```
+
+在主函数中调用sys\_tick\_init初始化systick，并写个测试验证一下systick是否工作。
+
+```
+void systick_test(void) {
+  int64_t start = get_time_ms64();
+  sleep_ms(1000);
+  int64_t end = get_time_ms64();
+  int64_t duration = end - start;
+	
+  assert(duration == 1000);
+}
+
+int main (void)                        
+{
+  SystemInit();
+  sys_tick_init();
+	
+  LCD_Init();
+  LCD_Clear(White);
+	
+  platform_prepare();
+  systick_test();
+	
+  lcd_test();
+}
+```
+
+运行一下，如果没有触发assert，说明systick没有问题了。如果有问题，请自行查找解决方案。
+

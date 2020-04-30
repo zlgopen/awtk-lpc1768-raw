@@ -1580,6 +1580,11 @@
               <FileType>1</FileType>
               <FilePath>..\awtk-port\main_loop_impl.c</FilePath>
             </File>
+            <File>
+              <FileName>sys_tick.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\awtk-port\sys_tick.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
