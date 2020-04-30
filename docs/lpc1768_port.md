@@ -15,7 +15,7 @@ LPC1768 和 STM32F103 是一个等级的芯片，移植的方法基本一样，S
 旺宝 LPC1768 开发板、3. 源代码-Example\2、TFT 屏例程、3.2 寸、【1】旺宝 1768_LCD 显示图片、【01】宝马 1768_LCD 显示 dada
 ```
 
-> 这是一个 Keil 工程，在移植之前，先确保该工程，能够正常运行和显示图形。
+> 这是一个 Keil 工程，在移植之前，先确保该工程能够正常编译、下载和运行。
 
 ## 2. 将 awtk 项目取到当前目录
 
@@ -49,11 +49,7 @@ drwxr-xr-x 1 Admin 197121     0 4 月  29 21:53 BaseDrive/
 -rw-r--r-- 1 Admin 197121 3930 4 月  30 07:13 awtk-port/awtk_config.h
 ```
 
-在创建配置文件时，以以下文件为蓝本，并参考类似平台的配置：
-
-```
-awtk/src/base/awtk_config_sample.h
-```
+在创建配置文件时，以 awtk/src/base/awtk_config_sample.h 为蓝本，并参考类似平台的配置文件：
 
 对于低端平台 (Cortex M3)，典型的配置如下：
 
@@ -123,7 +119,9 @@ awtk/src/base/awtk_config_sample.h
 
 AWTK 的源文件很多，而且不同的平台，加入的文件有所不同，导致加文件的过程非常痛苦。为此，我把 cortex m3 需要的文件，放到 files/files_m3.txt 文件中，并本生成 keil 需要的 xml 格式，放到 files/files_m3.xml 中。自己创建项目时，把 files/files_m3.xml 中的内容放到 Project/Project.uvprojx 即可。
 
-如果不知放到 Project/Project.uvprojx 中哪个位置，我们可以先在 keil 中创建一个 Group，名为 awtk，并添加一个 foobar.c 的文件：
+如果不知道放到 Project/Project.uvprojx 中哪个位置，可以先在 keil 中创建一个 Group，名为 awtk，并添加一个 foobar.c 的文件：
+
+> 在 foobar.c 中随便写点内容，如注释之类的东西。
 
 ![](images/add_file_1.jpg)
 
@@ -131,7 +129,7 @@ AWTK 的源文件很多，而且不同的平台，加入的文件有所不同，
 
 ![](images/add_file_2.jpg)
 
-用 files/files_m3.xml 中的内容替换选中部分的内容，保存文件。
+用 files/files_m3.xml 中的内容替换选中部分的内容，保存文件并退出。
 
 > 如果 Project.uvprojx 文件不是在 Project（或其它名字）子目录下，而是项目根目录下（和 awtk 并列），则需要编辑 files/files_m3.xml，把。.\awtk 替换成。\awtk。
 
@@ -148,8 +146,140 @@ AWTK 的源文件很多，而且不同的平台，加入的文件有所不同，
 ```
 ../awtk/src;../awtk/src/ext_widgets;../awtk/3rd;../awtk/3rd/agge;../awtk/3rd/nanovg;../awtk/3rd/nanovg/base;../awtk/3rd/gpinyin/include../awtk/3rd/libunibreak;../awtk-port;
 ```
-* Misc Controls 中加上--gnu标志。
+* Misc Controls 中加上--gnu 标志。
 
 设置界面的效果如下：
 
 ![](images/settings.jpg)
+
+## 7. 加入硬件平台相关的文件
+
+编译一下，可以发现，编译没有问题，但是链接时有几个函数找不到。
+
+```
+linking...
+.\obj\Project.axf: Error: L6218E: Undefined symbol lcd_mem_fragment_get_buff (referred from widget.o).
+.\obj\Project.axf: Error: L6218E: Undefined symbol main_loop_init (referred from awtk_global.o).
+.\obj\Project.axf: Error: L6218E: Undefined symbol platform_prepare (referred from awtk_global.o).
+Not enough information to list image symbols.
+Not enough information to list load addresses in the image map.
+Finished: 2 information, 0 warning and 3 error messages.
+".\obj\Project.axf" - 3 Error(s), 0 Warning(s).
+Target not created.
+Build Time Elapsed:  00:00:01
+```
+
+现在我们在 awtk-port 目录中，加入以下几个文件。
+
+后面写的硬件平台相关的代码，都会放到下面的文件中。这里先把框架写好，后面再来完善：
+
+```
+assert.c  awtk_config.h  lcd_impl.c  main_loop_impl.c  platform.c
+```
+
+### 1. assert.c 
+
+开始移植的时，经常出现 assert，缺省 assert 的实现，触发 assert 时不知道 assert 的位置。为此我们可以自己实现一个 assert 函数，以方便调试时定位：
+
+```c
+#include "tkc/types_def.h"
+
+__attribute__((weak, noreturn)) void __aeabi_assert(const char* expr, const char* file, int line) {
+  for (;;)
+    ;
+}
+```
+
+### 2. lcd_impl.c
+
+lcd_impl.c 用于实现 lcd 接口，m3 内存都比较小，通常使用 fragment buffer，我们先把框架实现好，后面根据平台实际情况进行完善：
+
+```c
+#include "tkc/mem.h"
+#include "lcd/lcd_mem_fragment.h"
+
+typedef uint16_t pixel_t;
+
+#define LCD_FORMAT BITMAP_FMT_BGR565
+#define pixel_from_rgb(r, g, b)                                                \
+  ((((r) >> 3) << 11) | (((g) >> 2) << 5) | ((b) >> 3))
+#define pixel_to_rgba(p)                                                       \
+  { (0xff & ((p >> 11) << 3)), (0xff & ((p >> 5) << 2)), (0xff & (p << 3)) }
+
+static inline void set_window_func(int start_x, int start_y, int end_x, int end_y) {
+  /*TODO*/
+}
+
+static inline void write_data_func(uint16_t color) {
+  /*TODO*/
+}
+
+#include "base/pixel.h"
+#include "blend/pixel_ops.inc"
+#include "lcd/lcd_mem_fragment.inc"
+```
+
+### 3. main_loop_impl.c
+
+main_loop_impl.c 主要负责各种事件的分发，这里使用 main_loop_raw.inc 来实现具体功能，提供 dispatch_input_events 函数用于读取和分发触屏和按键事件即可。
+
+```c
+#include "base/idle.h"
+#include "base/timer.h"
+#include "tkc/platform.h"
+#include "base/main_loop.h"
+#include "base/event_queue.h"
+#include "base/font_manager.h"
+#include "lcd/lcd_mem_fragment.h"
+#include "main_loop/main_loop_simple.h"
+
+ret_t platform_disaptch_input(main_loop_t *l) { return RET_OK; }
+
+static lcd_t *platform_create_lcd(wh_t w, wh_t h) {
+  return lcd_mem_fragment_create(w, h);
+}
+
+void dispatch_input_events(void) {
+  /*TODO*/
+}
+
+#include "main_loop/main_loop_raw.inc"
+```
+
+### 4. platform.c
+
+主要负责 heap 内存的初始化，请根据平台实际情况调整 s\_heam\_mem 的大小。
+
+在裸系统的平台中，内存主要分为几种用途：
+
+* 栈
+* 堆
+* 驱动
+* 全局变量。
+* fragment framebuffer
+
+请根据具体情况进行分配和调整。
+
+```c
+#include "tkc/mem.h"
+#include "base/timer.h"
+
+ret_t platform_prepare(void) {
+  static bool_t inited = FALSE;
+  static uint32_t s_heam_mem[6000];
+
+  if (!inited) {
+    inited = TRUE;
+    tk_mem_init(s_heam_mem, sizeof(s_heam_mem));
+  }
+
+  return RET_OK;
+}
+
+```
+
+### 5. 将以上文件加入到 keil 工程：
+
+![](images/awtk_port_1.jpg)
+
+再编译一下，发现编译成功了。当然，只是编译成功而已，并不能真正运行起来，具体移植工作，还有没开始呢。

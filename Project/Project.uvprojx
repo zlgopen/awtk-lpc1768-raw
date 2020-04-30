@@ -1568,6 +1568,31 @@
           </Files>
         </Group>
         <Group>
+          <GroupName>awtk-port</GroupName>
+          <Files>
+            <File>
+              <FileName>assert.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\awtk-port\assert.c</FilePath>
+            </File>
+            <File>
+              <FileName>platform.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\awtk-port\platform.c</FilePath>
+            </File>
+            <File>
+              <FileName>lcd_impl.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\awtk-port\lcd_impl.c</FilePath>
+            </File>
+            <File>
+              <FileName>main_loop_impl.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\awtk-port\main_loop_impl.c</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
           <GroupName>::CMSIS</GroupName>
         </Group>
       </Groups>
