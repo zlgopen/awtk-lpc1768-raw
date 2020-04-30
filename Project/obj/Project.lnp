@@ -5,7 +5,6 @@
 ".\obj\main.o"
 ".\obj\lpc17xx_it.o"
 ".\obj\lcd.o"
-".\obj\picture.o"
 ".\obj\buffer.o"
 ".\obj\color.o"
 ".\obj\color_parser.o"
@@ -233,9 +232,9 @@
 ".\obj\mutex_null.o"
 ".\obj\sys_tick_handler.o"
 ".\obj\assert.o"
-".\obj\lcd_stm32_raw.o"
-".\obj\main_loop_stm32_raw.o"
 ".\obj\platform.o"
+".\obj\lcd_impl.o"
+".\obj\main_loop_impl.o"
 --strict --scatter ".\obj\Project.sct"
 --summary_stderr --info summarysizes --map --load_addr_map_info --xref --callgraph --symbols
 --info sizes --info totals --info unused --info veneers

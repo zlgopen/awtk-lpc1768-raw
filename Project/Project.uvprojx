@@ -423,16 +423,6 @@
           </Files>
         </Group>
         <Group>
-          <GroupName>BaseDrive/Picture</GroupName>
-          <Files>
-            <File>
-              <FileName>Picture.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\BaseDrive\Picture\Picture.c</FilePath>
-            </File>
-          </Files>
-        </Group>
-        <Group>
           <GroupName>awtk</GroupName>
           <Files>
             <File>

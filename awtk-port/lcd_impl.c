@@ -19,6 +19,7 @@
  *
  */
 
+#include "LCD.h"
 #include "tkc/mem.h"
 #include "lcd/lcd_mem_fragment.h"
 
@@ -30,12 +31,9 @@ typedef uint16_t pixel_t;
 #define pixel_to_rgba(p)                                                       \
   { (0xff & ((p >> 11) << 3)), (0xff & ((p >> 5) << 2)), (0xff & (p << 3)) }
 
-static inline void set_window_func(int start_x, int start_y, int end_x, int end_y) {
-}
 
-static inline void write_data_func(uint16_t color) {
-}
-
+#define lcd_draw_bitmap_impl(x, y, w, h, p) LCD_Bmp(x, y, w, h, (unsigned char*)p)
+		
 #include "base/pixel.h"
 #include "blend/pixel_ops.inc"
 #include "lcd/lcd_mem_fragment.inc"

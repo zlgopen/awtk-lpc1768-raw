@@ -258,7 +258,7 @@ void dispatch_input_events(void) {
 * 全局变量。
 * fragment framebuffer
 
-请根据具体情况进行分配和调整。
+> 请根据具体情况进行分配和调整。
 
 ```c
 #include "tkc/mem.h"
@@ -283,3 +283,137 @@ ret_t platform_prepare(void) {
 ![](images/awtk_port_1.jpg)
 
 再编译一下，发现编译成功了。当然，只是编译成功而已，并不能真正运行起来，具体移植工作，还有没开始呢。
+
+## 8. 编写平台相关的代码
+
+### 8.1 实现 lcd
+
+使用 fragment framebuffer 的 lcd 时，主要是需要提供几个宏，用于辅助实现 lcd\_mem\_fragment\_flush 函数。先看看 lcd\_mem\_fragment\_flush 函数的代码：
+
+```c
+static ret_t lcd_mem_fragment_flush(lcd_t* lcd) {
+  lcd_mem_fragment_t* mem = (lcd_mem_fragment_t*)lcd;
+
+  int32_t x = mem->x;
+  int32_t y = mem->y;
+  uint32_t w = mem->fb.w;
+  uint32_t h = mem->fb.h;
+  pixel_t* p = mem->buff;
+  
+#ifdef lcd_draw_bitmap_impl
+  lcd_draw_bitmap_impl(x, y, w, h, p);
+#else
+  uint32_t nr = w * h;
+  set_window_func(x, y, x + w - 1, y + h - 1);
+  while (nr-- > 0) {
+    write_data_func(*p++);
+  }
+#endif
+	
+  return RET_OK;
+}
+```
+
+从以上代码可以看出，有两种方式：
+
+* 提供 lcd\_draw\_bitmap\_impl 宏。
+
+* 提供 set\_window\_func 和 write\_data\_func。
+
+怎么实现，可以参考一下平台 SDK 提供贴图函数。比如在旺宝提供的 SDK 中，贴图函数是这样写的：
+
+```c
+void LCD_Bmp (unsigned int x, unsigned int y, unsigned int w, unsigned int h, unsigned char *bmp) 
+{
+  unsigned int    i, j;
+  unsigned short *bitmap_ptr = (unsigned short *)bmp;
+
+  LCD_WindowMax(x,y,x+w,y+h);
+  LCD_SetCursor(x,y);
+  wr_cmd(0x22);
+  
+ bitmap_ptr += (h*w)-1;
+  for (j = 0; j < h; j++) {
+    for (i = 0; i < w; i++) {
+      wr_dat_only(*bitmap_ptr--);
+	
+    }
+  }
+}
+```
+
+这个函数和我们需要的 lcd\_draw\_bitmap\_impl 宏基本一致，可以直接拿来用。lcd\_impl.c 的内容如下：
+
+```c
+
+#include "LCD.h"
+#include "tkc/mem.h"
+#include "lcd/lcd_mem_fragment.h"
+
+typedef uint16_t pixel_t;
+
+#define LCD_FORMAT BITMAP_FMT_BGR565
+#define pixel_from_rgb(r, g, b)                                                \
+  ((((r) >> 3) << 11) | (((g) >> 2) << 5) | ((b) >> 3))
+#define pixel_to_rgba(p)                                                       \
+  { (0xff & ((p >> 11) << 3)), (0xff & ((p >> 5) << 2)), (0xff & (p << 3)) }
+
+#define lcd_draw_bitmap_impl(x, y, w, h, p) LCD_Bmp(x, y, w, h, (unsigned char*)p)
+		
+#include "base/pixel.h"
+#include "blend/pixel_ops.inc"
+#include "lcd/lcd_mem_fragment.inc"
+
+```
+
+删除不必要的文件（如 Picture)，腾出空间供 AWTK 使用。为了确保 lcd 移植代码正确，特别是颜色格式是正确的，我们写个小测序，验证一下红绿蓝三色显示正常：
+
+```c
+void lcd_test(void) {
+	rect_t r = rect_init(0, 0, 30, 30);
+	lcd_t* lcd = lcd_mem_fragment_create(LCD_W, LCD_H);
+	color_t red = color_init(0xff, 0, 0, 0xff);
+	color_t green  = color_init(0, 0xff, 0, 0xff);
+	color_t blue = color_init(0, 0, 0xff, 0xff);
+	
+	while(1) {
+		lcd_begin_frame(lcd, &r, LCD_DRAW_NORMAL);
+		lcd_set_fill_color(lcd, red);
+		lcd_fill_rect(lcd, 0, 0, 10, 10);
+		lcd_set_fill_color(lcd, green);
+		lcd_fill_rect(lcd, 10, 10, 10, 10);
+		lcd_set_fill_color(lcd, blue);
+		lcd_fill_rect(lcd, 20, 20, 10, 10);
+		
+		lcd_end_frame(lcd);
+	}
+}
+
+int main (void)                        
+{
+  SystemInit();
+
+  LCD_Init();
+  LCD_Clear(White);
+	
+	platform_prepare();
+	
+	lcd_test();
+}
+```
+
+编译：
+
+![](images/lcd_works_1.jpg)
+
+下载运行。如果开发板上出现以下界面，表示 lcd 正常工作了：
+
+![](images/lcd_works_2.jpg)
+
+如果颜色不正常，通常是 r 和 g 通道反了，请根据具体情况定义下面的宏：
+
+```c
+#define LCD_FORMAT 
+#define pixel_from_rgb(r, g,b)
+#define pixel_to_rgba(p) 
+```
