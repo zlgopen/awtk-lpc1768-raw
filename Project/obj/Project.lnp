@@ -21,7 +21,7 @@
 ".\obj\event_source_manager.o"
 ".\obj\event_source_manager_default.o"
 ".\obj\event_source_timer.o"
-".\obj\expr_eval.o"
+".\obj\fscript.o"
 ".\obj\fs.o"
 ".\obj\func_call_parser.o"
 ".\obj\idle_info.o"
