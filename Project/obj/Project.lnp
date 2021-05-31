@@ -236,6 +236,7 @@
 ".\obj\lcd_impl.o"
 ".\obj\main_loop_impl.o"
 ".\obj\sys_tick.o"
+".\obj\semaphore_null.o"
 ".\obj\assets-mini.o"
 ".\obj\demo_basic.o"
 --strict --scatter ".\obj\Project.sct"

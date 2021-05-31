@@ -415,10 +415,10 @@ ARM Macro Assembler    Page 7
               00000000 
 Command Line: --debug --xref --diag_suppress=9931 --cpu=Cortex-M3 --apcs=interw
 ork --depend=.\obj\startup_lpc17xx.d -o.\obj\startup_lpc17xx.o -I.\RTE\_____3.2
-LCD_test -IC:\Keil_v5\ARM\PACK\ARM\CMSIS\5.0.1\CMSIS\Include -IC:\Keil_v5\ARM\P
-ACK\Keil\LPC1700_DFP\2.6.0\Device\Include --predefine="__UVISION_VERSION SETA 5
-24" --predefine="_RTE_ SETA 1" --predefine="LPC175x_6x SETA 1" --list=.\list\st
-artup_lpc17xx.lst ..\Cmsis\startup_LPC17xx.s
+LCD_test -IC:\Keil_v5\ARM\PACK\ARM\CMSIS\5.7.0\CMSIS\Core\Include -IC:\Keil_v5\
+ARM\PACK\Keil\LPC1700_DFP\2.6.0\Device\Include --predefine="__UVISION_VERSION S
+ETA 524" --predefine="_RTE_ SETA 1" --predefine="LPC175x_6x SETA 1" --list=.\li
+st\startup_lpc17xx.lst ..\Cmsis\startup_LPC17xx.s
 
 
 

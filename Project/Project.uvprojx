@@ -1585,6 +1585,11 @@
               <FileType>1</FileType>
               <FilePath>..\awtk-port\sys_tick.c</FilePath>
             </File>
+            <File>
+              <FileName>semaphore_null.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\awtk\src\platforms\raw\semaphore_null.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
